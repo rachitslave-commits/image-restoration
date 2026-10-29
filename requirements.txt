@@ -1,0 +1,5 @@
+opencv-python-headless==4.11.0.86
+numpy>=1.21,<3
+Flask>=3.0,<4
+scikit-image>=0.21
+scipy>=1.9

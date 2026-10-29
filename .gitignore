@@ -1,0 +1,18 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+*.egg-info/
+dist/
+build/
+.env
+
+# large model weights — download locally with download_models.py
+models/colorization_release_v2.caffemodel
+models/*.bak
+
+# test artefacts
+test_input.png
+test_colorized.png

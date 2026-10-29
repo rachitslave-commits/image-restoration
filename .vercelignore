@@ -1,0 +1,10 @@
+venv/
+models/colorization_release_v2.caffemodel
+models/colorization_deploy_v2.prototxt
+models/pts_in_hull.npy
+test_input.png
+test_colorized.png
+*.bak
+__pycache__/
+*.pyc
+.DS_Store
