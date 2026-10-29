@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revive — Old Photo Restoration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css" />
+</head>
+<body>
+  <div class="page">
+
+    <header>
+      <div class="brand">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Revive</h1>
+          <p>Old Photo Restoration &amp; Colorization</p>
+        </div>
+      </div>
+      <div class="meta">
+        <span class="chip">IMDAI</span>
+        <span>Rachit Joshi · S24CSEU0298</span>
+      </div>
+    </header>
+
+    <div id="no-color-banner" class="banner" hidden>
+      ⚠ Colorization model not found — restoration still works. Run <code>python download_models.py</code> locally to enable it.
+    </div>
+
+    <div class="layout">
+
+      <!-- ====== CONTROLS ====== -->
+      <aside class="sidebar">
+
+        <!-- upload -->
+        <div class="card">
+          <div class="card-label"><span class="num">1</span> Upload Photo</div>
+          <div id="dz" class="dz" tabindex="0" role="button" aria-label="Upload photo">
+            <input id="file-in" type="file" accept="image/*" hidden />
+            <div id="dz-empty">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="38" height="38">
+                <rect x="4" y="8" width="40" height="32" rx="4"/>
+                <circle cx="17" cy="20" r="4"/>
+                <path d="M4 36l11-11 7 7 8-10 14 14"/>
+                <path d="M36 4v14M30 10l6-6 6 6"/>
+              </svg>
+              <p>Drop photo here</p>
+              <span>or click · JPG / PNG</span>
+            </div>
+            <div id="dz-filled" hidden>
+              <img id="dz-thumb" alt="thumb" />
+              <div>
+                <p id="dz-name">photo.jpg</p>
+                <button id="dz-change">Change</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- options -->
+        <div class="card">
+          <div class="card-label"><span class="num">2</span> Options</div>
+
+          <label class="toggle">
+            <input type="checkbox" id="opt-restore" checked />
+            <span class="track"><span class="knob"></span></span>
+            <span class="tl">
+              <b>Restore</b>
+              <small>Denoise · contrast · scratch repair · sharpen</small>
+            </span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="opt-color" checked />
+            <span class="track"><span class="knob"></span></span>
+            <span class="tl">
+              <b>Colorize</b>
+              <small>Add colour with deep learning</small>
+            </span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="opt-sim" />
+            <span class="track"><span class="knob"></span></span>
+            <span class="tl">
+              <b>Test mode</b>
+              <small>Damage photo first, measure PSNR/SSIM</small>
+            </span>
+          </label>
+
+          <div class="sep"></div>
+
+          <div class="sl-group">
+            <div class="sl">
+              <div class="sl-top"><label for="s-dn">Denoise</label><output id="o-dn">20</output></div>
+              <input type="range" id="s-dn" min="1" max="30" value="20">
+            </div>
+            <div class="sl">
+              <div class="sl-top"><label for="s-cl">Contrast (CLAHE)</label><output id="o-cl">1.5</output></div>
+              <input type="range" id="s-cl" min="1.0" max="6.0" step="0.5" value="1.5">
+            </div>
+            <div class="sl">
+              <div class="sl-top"><label for="s-sc">Scratch sensitivity</label><output id="o-sc">55</output></div>
+              <input type="range" id="s-sc" min="10" max="100" value="55">
+            </div>
+            <div class="sl">
+              <div class="sl-top"><label for="s-sh">Sharpness</label><output id="o-sh">1.3</output></div>
+              <input type="range" id="s-sh" min="1.0" max="2.5" step="0.1" value="1.3">
+            </div>
+          </div>
+        </div>
+
+        <button id="run" disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" width="18" height="18" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2"/></svg>
+          <span id="run-lbl">Restore Photo</span>
+          <span id="run-spin" hidden><span class="sp"></span>Processing…</span>
+        </button>
+
+      </aside>
+
+      <!-- ====== RESULT ====== -->
+      <main class="result-area">
+
+        <!-- empty -->
+        <div id="empty" class="empty">
+          <div class="film-frame">
+            <div class="film-img"></div>
+            <div class="film-strip"><span></span><span></span><span></span><span></span></div>
+          </div>
+          <p>Your restored photo will appear here.</p>
+          <small>Upload an image and click <strong>Restore Photo</strong>.</small>
+        </div>
+
+        <!-- result (hidden until processed) -->
+        <div id="result" class="result-card" hidden>
+
+          <div class="result-top">
+            <div class="result-title">Result</div>
+            <div class="result-actions">
+              <div class="view-tabs">
+                <button id="vt-compare" class="vt on">Compare</button>
+                <button id="vt-split"   class="vt">Side by side</button>
+              </div>
+              <a id="dl" class="dl-btn" download="revived.png">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 16h14"/></svg>
+                Download
+              </a>
+            </div>
+          </div>
+
+          <!-- compare slider -->
+          <div id="view-compare" class="view-compare">
+            <div id="stage" class="stage">
+              <div id="lay-after"  class="lay"></div>
+              <div id="lay-before" class="lay lay-top"></div>
+              <div id="handle" class="handle">
+                <div class="h-line"></div>
+                <div class="h-knob">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 6l-4 4 4 4M13 6l4 4-4 4"/>
+                  </svg>
+                </div>
+              </div>
+              <span class="label label-l" id="lbl-l">Before</span>
+              <span class="label label-r" id="lbl-r">After</span>
+            </div>
+          </div>
+
+          <!-- side by side -->
+          <div id="view-split" class="view-split" hidden>
+            <figure>
+              <img id="sp-before" alt="before" />
+              <figcaption id="sp-cap-l">Before</figcaption>
+            </figure>
+            <figure>
+              <img id="sp-after" alt="after" />
+              <figcaption id="sp-cap-r">After</figcaption>
+            </figure>
+          </div>
+
+          <!-- metrics -->
+          <div id="metrics" class="metrics" hidden>
+            <p class="m-title">Restoration quality vs. clean original</p>
+            <div class="m-grid">
+              <div class="mc"><span class="mc-l">PSNR before</span><span class="mc-v" id="mc-pb">—</span><span class="mc-u">dB</span></div>
+              <div class="mc hi"><span class="mc-l">PSNR after</span><span class="mc-v" id="mc-pa">—</span><span class="mc-u">dB</span><span class="mc-d" id="mc-dp"></span></div>
+              <div class="mc"><span class="mc-l">SSIM before</span><span class="mc-v" id="mc-sb">—</span></div>
+              <div class="mc hi"><span class="mc-l">SSIM after</span><span class="mc-v" id="mc-sa">—</span><span class="mc-d" id="mc-ds"></span></div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      Colorization model by <a href="https://richzhang.github.io/colorization/" target="_blank" rel="noopener">Zhang, Isola &amp; Efros</a> (ECCV 2016) &nbsp;·&nbsp; IMDAI · Rachit Joshi
+    </footer>
+  </div>
+
+  <script src="/public/app.js"></script>
+</body>
+</html>

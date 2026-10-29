@@ -1,10 +1,10 @@
 venv/
-models/colorization_release_v2.caffemodel
-models/colorization_deploy_v2.prototxt
-models/pts_in_hull.npy
-test_input.png
-test_colorized.png
-*.bak
 __pycache__/
 *.pyc
+*.bak
+test_input.png
+test_colorized.png
 .DS_Store
+# The 123 MB caffemodel cannot be bundled in serverless.
+# Colorization is disabled on Vercel; restore works fully.
+models/colorization_release_v2.caffemodel
